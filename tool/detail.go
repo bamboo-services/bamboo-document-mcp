@@ -36,7 +36,7 @@ func (t *Tool) DocumentDetail(
 	}
 
 	// 2. 构建请求 URL
-	uri := fmt.Sprintf("https://doc.x-lf.com/docs/%s%s", input.Sector, path)
+	uri := fmt.Sprintf("https://doc.x-lf.com/llms.mdx/docs/%s%s", input.Sector, path)
 
 	// 3. 发送 GET 请求
 	resp, err := t.client.R().Get(uri)

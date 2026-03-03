@@ -46,7 +46,7 @@ func (t *Tool) DocumentSearch(
 	}
 
 	// 3. 获取文档内容
-	uri := fmt.Sprintf("https://doc.x-lf.com/docs/%s%s", input.Sector, path)
+	uri := fmt.Sprintf("https://doc.x-lf.com/llms.mdx/docs/%s%s", input.Sector, path)
 	resp, err := t.client.R().Get(uri)
 	if err != nil {
 		return nil, DocumentSearchOutput{}, err

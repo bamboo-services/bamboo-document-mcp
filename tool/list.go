@@ -12,8 +12,8 @@ import (
 
 // DocumentListInput 文档列表工具的输入参数。
 type DocumentListInput struct {
-	Sector string  `json:"sector" jsonschema:"板块内容"`  // Sector 板块标识，如 bamboo-base-go
-	Search *string `json:"search" jsonschema:"搜索关键词"` // Search 可选的搜索关键词
+	Sector string  `json:"sector" jsonschema:"板块内容"`           // Sector 板块标识，如 bamboo-base-go
+	Search *string `json:"search" jsonschema:"optional,搜索关键词"` // Search 可选的搜索关键词
 }
 
 // DocumentListOutput 文档列表工具的输出结果。
