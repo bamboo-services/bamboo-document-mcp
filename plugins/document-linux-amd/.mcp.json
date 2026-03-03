@@ -1,1 +1,0 @@
-{"mcpServers":{"bamboo-doc":{"command":"sh","args":["-c","\"$(pwd)/document\""],"env":{}}}}

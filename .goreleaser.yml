@@ -1,0 +1,50 @@
+# GoReleaser 配置文件
+# 文档: https://goreleaser.com/customization/
+
+project_name: bamboo-document
+
+before:
+  hooks:
+    - go mod tidy
+
+builds:
+  - env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - darwin
+      - windows
+    goarch:
+      - amd64
+      - arm64
+    ldflags:
+      - -s -w
+      - -X 'main.version={{.Version}}'
+    binary: bamboo-document
+
+archives:
+  - format: binary
+    name_template: "{{ .ProjectName }}-{{ .Os }}-{{ .Arch }}"
+
+checksum:
+  name_template: 'checksums.txt'
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - '^docs:'
+      - '^test:'
+      - '^ci:'
+
+release:
+  github:
+    owner: bamboo-services
+    name: bamboo-document-mcp
+  draft: false
+  prerelease: auto
+  extra_files:
+    - glob: scripts/install.sh
+    - glob: scripts/install.ps1
+    - glob: scripts/uninstall.sh
+    - glob: scripts/uninstall.ps1

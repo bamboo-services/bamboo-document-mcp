@@ -1,0 +1,134 @@
+name: Release
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+
+jobs:
+  goreleaser:
+    name: Build and Release with GoReleaser
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: stable
+      - name: Run GoReleaser
+        uses: goreleaser/goreleaser-action@v6
+        with:
+          distribution: goreleaser
+          version: '~> v2'
+          args: release --clean
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  update-homebrew:
+    name: Update Homebrew Formula
+    needs: goreleaser
+    runs-on: ubuntu-latest
+    continue-on-error: true
+
+    steps:
+      - name: Extract version
+        id: version
+        run: |
+          VERSION=${GITHUB_REF#refs/tags/v}
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          CLASS_SUFFIX=$(echo "$VERSION" | tr -d '.')
+          echo "class_suffix=$CLASS_SUFFIX" >> $GITHUB_OUTPUT
+          echo "Updating Homebrew Formula to version: $VERSION"
+
+      - name: Checkout homebrew-tap repository
+        uses: actions/checkout@v4
+        with:
+          repository: XiaoLFeng/homebrew-tap
+          token: ${{ secrets.HOMEBREW_TAP_TOKEN }}
+          path: homebrew-tap
+
+      - name: Get old version
+        id: old_version
+        working-directory: homebrew-tap
+        run: |
+          OLD_VERSION=$(grep -oP 'version "\K[0-9]+\.[0-9]+\.[0-9]+' Formula/b/bamboo-document.rb)
+          echo "old_version=$OLD_VERSION" >> $GITHUB_OUTPUT
+          OLD_CLASS_SUFFIX=$(echo "$OLD_VERSION" | tr -d '.')
+          echo "old_class_suffix=$OLD_CLASS_SUFFIX" >> $GITHUB_OUTPUT
+          echo "Current version in Formula: $OLD_VERSION"
+
+      - name: Create versioned Formula for old version
+        working-directory: homebrew-tap
+        env:
+          OLD_VERSION: ${{ steps.old_version.outputs.old_version }}
+          OLD_CLASS_SUFFIX: ${{ steps.old_version.outputs.old_class_suffix }}
+        run: |
+          VERSIONED_FILE="Formula/b/bamboo-document@${OLD_VERSION}.rb"
+
+          if [ -f "$VERSIONED_FILE" ]; then
+            echo "Versioned Formula already exists: $VERSIONED_FILE"
+            exit 0
+          fi
+
+          echo "Creating versioned Formula: $VERSIONED_FILE"
+
+          cp Formula/b/bamboo-document.rb "$VERSIONED_FILE"
+
+          sed -i "s/# Formula for bamboo-document/# Formula for bamboo-document@${OLD_VERSION}/" "$VERSIONED_FILE"
+          sed -i "s/Bamboo 竹简库文档 MCP 服务$/Bamboo 竹简库文档 MCP 服务（固定版本）/" "$VERSIONED_FILE"
+          sed -i "s/class BambooDocument < Formula/class BambooDocumentAT${OLD_CLASS_SUFFIX} < Formula/" "$VERSIONED_FILE"
+          sed -i "s/bamboo-document 已成功安装/bamboo-document@${OLD_VERSION} 已成功安装/" "$VERSIONED_FILE"
+          sed -i '/快速开始/i\      ⚠️  注意：这是一个固定版本的 Formula\n      - 此版本不会自动更新到更高版本\n      - 如需最新版本，请使用：brew install bamboo-document\n' "$VERSIONED_FILE"
+
+          echo "Created versioned Formula: $VERSIONED_FILE"
+
+      - name: Update main Formula version
+        working-directory: homebrew-tap
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          FORMULA_FILE="Formula/b/bamboo-document.rb"
+
+          echo "Updating version to: $VERSION"
+          sed -i 's/^  version "[0-9]*\.[0-9]*\.[0-9]*"/  version "'"$VERSION"'"/' "$FORMULA_FILE"
+
+          echo "Updated Formula version:"
+          grep "version" "$FORMULA_FILE"
+
+      - name: Commit and push changes
+        working-directory: homebrew-tap
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+          OLD_VERSION: ${{ steps.old_version.outputs.old_version }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          if git diff --quiet && [ -z "$(git ls-files --others --exclude-standard)" ]; then
+            echo "No changes to commit (version might already be up to date)"
+            exit 0
+          fi
+
+          git add Formula/b/
+
+          if [ -f "Formula/b/bamboo-document@${OLD_VERSION}.rb" ] && git diff --cached --name-only | grep -q "bamboo-document@"; then
+            git commit -m "chore(bamboo-document): bump to v${VERSION}, archive v${OLD_VERSION}" \
+              -m "- Update bamboo-document.rb to version ${VERSION}" \
+              -m "- Create bamboo-document@${OLD_VERSION}.rb for version pinning" \
+              -m "" \
+              -m "Automated update from bamboo-document-mcp release workflow." \
+              -m "Release: https://github.com/bamboo-services/bamboo-document-mcp/releases/tag/v${VERSION}"
+          else
+            git commit -m "chore(bamboo-document): bump version to ${VERSION}" \
+              -m "" \
+              -m "Automated update from bamboo-document-mcp release workflow." \
+              -m "Release: https://github.com/bamboo-services/bamboo-document-mcp/releases/tag/v${VERSION}"
+          fi
+
+          git push origin master
+          echo "✅ Successfully updated homebrew-tap!"
