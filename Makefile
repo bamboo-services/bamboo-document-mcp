@@ -5,7 +5,7 @@ GO := go
 GOFLAGS := -v
 
 # 版本信息
-VERSION := $(shell git describe --tags --always --dirty 2>/dev/null || echo "dev")
+VERSION := $(shell git describe --tags --always 2>/dev/null || echo "dev")
 BUILD_TIME := $(shell date -u '+%Y-%m-%d_%H:%M:%S')
 LDFLAGS := -ldflags "-s -w -X main.Version=$(VERSION) -X main.BuildTime=$(BUILD_TIME)"
 
@@ -41,7 +41,7 @@ package-darwin-arm64:
 	@mkdir -p $(PLUGINS_DIR)/$(DARWIN_ARM64_DIR)/.claude-plugin
 	GOOS=darwin GOARCH=arm64 $(GO) build $(LDFLAGS) -o $(PLUGINS_DIR)/$(DARWIN_ARM64_DIR)/$(APP_NAME) $(MAIN_FILE)
 	@echo '{"mcpServers":{"shared-server":{"command":"./$(APP_NAME)","args":[],"env":{}}}}' > $(PLUGINS_DIR)/$(DARWIN_ARM64_DIR)/.mcp.json
-	@echo '{"name":"$(DARWIN_ARM64_DIR)","description":"$(PLUGIN_DESC) (macOS Apple Silicon)","version":"$(VERSION)"}' > $(PLUGINS_DIR)/$(DARWIN_ARM64_DIR)/.claude-plugin/plugin.json
+	@perl -pi -e 's/"version":\s*"[^"]*"/"version": "$(VERSION)"/' $(PLUGINS_DIR)/$(DARWIN_ARM64_DIR)/.claude-plugin/plugin.json
 	@echo "✅ 完成: $(PLUGINS_DIR)/$(DARWIN_ARM64_DIR)/"
 
 # macOS AMD64 (Intel)
@@ -51,7 +51,7 @@ package-darwin-amd64:
 	@mkdir -p $(PLUGINS_DIR)/$(DARWIN_AMD64_DIR)/.claude-plugin
 	GOOS=darwin GOARCH=amd64 $(GO) build $(LDFLAGS) -o $(PLUGINS_DIR)/$(DARWIN_AMD64_DIR)/$(APP_NAME) $(MAIN_FILE)
 	@echo '{"mcpServers":{"shared-server":{"command":"./$(APP_NAME)","args":[],"env":{}}}}' > $(PLUGINS_DIR)/$(DARWIN_AMD64_DIR)/.mcp.json
-	@echo '{"name":"$(DARWIN_AMD64_DIR)","description":"$(PLUGIN_DESC) (macOS Intel)","version":"$(VERSION)"}' > $(PLUGINS_DIR)/$(DARWIN_AMD64_DIR)/.claude-plugin/plugin.json
+	@perl -pi -e 's/"version":\s*"[^"]*"/"version": "$(VERSION)"/' $(PLUGINS_DIR)/$(DARWIN_AMD64_DIR)/.claude-plugin/plugin.json
 	@echo "✅ 完成: $(PLUGINS_DIR)/$(DARWIN_AMD64_DIR)/"
 
 # Linux ARM64
@@ -61,7 +61,7 @@ package-linux-arm64:
 	@mkdir -p $(PLUGINS_DIR)/$(LINUX_ARM64_DIR)/.claude-plugin
 	GOOS=linux GOARCH=arm64 $(GO) build $(LDFLAGS) -o $(PLUGINS_DIR)/$(LINUX_ARM64_DIR)/$(APP_NAME) $(MAIN_FILE)
 	@echo '{"mcpServers":{"shared-server":{"command":"./$(APP_NAME)","args":[],"env":{}}}}' > $(PLUGINS_DIR)/$(LINUX_ARM64_DIR)/.mcp.json
-	@echo '{"name":"$(LINUX_ARM64_DIR)","description":"$(PLUGIN_DESC) (Linux ARM64)","version":"$(VERSION)"}' > $(PLUGINS_DIR)/$(LINUX_ARM64_DIR)/.claude-plugin/plugin.json
+	@perl -pi -e 's/"version":\s*"[^"]*"/"version": "$(VERSION)"/' $(PLUGINS_DIR)/$(LINUX_ARM64_DIR)/.claude-plugin/plugin.json
 	@echo "✅ 完成: $(PLUGINS_DIR)/$(LINUX_ARM64_DIR)/"
 
 # Linux AMD64
@@ -71,7 +71,7 @@ package-linux-amd64:
 	@mkdir -p $(PLUGINS_DIR)/$(LINUX_AMD64_DIR)/.claude-plugin
 	GOOS=linux GOARCH=amd64 $(GO) build $(LDFLAGS) -o $(PLUGINS_DIR)/$(LINUX_AMD64_DIR)/$(APP_NAME) $(MAIN_FILE)
 	@echo '{"mcpServers":{"shared-server":{"command":"./$(APP_NAME)","args":[],"env":{}}}}' > $(PLUGINS_DIR)/$(LINUX_AMD64_DIR)/.mcp.json
-	@echo '{"name":"$(LINUX_AMD64_DIR)","description":"$(PLUGIN_DESC) (Linux AMD64)","version":"$(VERSION)"}' > $(PLUGINS_DIR)/$(LINUX_AMD64_DIR)/.claude-plugin/plugin.json
+	@perl -pi -e 's/"version":\s*"[^"]*"/"version": "$(VERSION)"/' $(PLUGINS_DIR)/$(LINUX_AMD64_DIR)/.claude-plugin/plugin.json
 	@echo "✅ 完成: $(PLUGINS_DIR)/$(LINUX_AMD64_DIR)/"
 
 # Windows AMD64
@@ -81,7 +81,7 @@ package-windows-amd64:
 	@mkdir -p $(PLUGINS_DIR)/$(WINDOWS_AMD64_DIR)/.claude-plugin
 	GOOS=windows GOARCH=amd64 $(GO) build $(LDFLAGS) -o $(PLUGINS_DIR)/$(WINDOWS_AMD64_DIR)/$(APP_NAME).exe $(MAIN_FILE)
 	@echo '{"mcpServers":{"shared-server":{"command":"./$(APP_NAME).exe","args":[],"env":{}}}}' > $(PLUGINS_DIR)/$(WINDOWS_AMD64_DIR)/.mcp.json
-	@echo '{"name":"$(WINDOWS_AMD64_DIR)","description":"$(PLUGIN_DESC) (Windows AMD64)","version":"$(VERSION)"}' > $(PLUGINS_DIR)/$(WINDOWS_AMD64_DIR)/.claude-plugin/plugin.json
+	@perl -pi -e 's/"version":\s*"[^"]*"/"version": "$(VERSION)"/' $(PLUGINS_DIR)/$(WINDOWS_AMD64_DIR)/.claude-plugin/plugin.json
 	@echo "✅ 完成: $(PLUGINS_DIR)/$(WINDOWS_AMD64_DIR)/"
 
 # 构建所有平台插件包
@@ -136,7 +136,8 @@ test:
 .PHONY: clean
 clean:
 	@echo "🧹 清理构建产物..."
-	@rm -rf $(PLUGINS_DIR)/document-*
+	@rm -f $(PLUGINS_DIR)/document-*/$(APP_NAME) $(PLUGINS_DIR)/document-*/$(APP_NAME).exe
+	@rm -f $(PLUGINS_DIR)/document-*/.mcp.json
 	@rm -f $(APP_NAME) $(APP_NAME).exe
 	@echo "✅ 清理完成"
 
