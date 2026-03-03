@@ -2,15 +2,17 @@ package tool
 
 import (
 	"context"
+	"strings"
 	"testing"
 
 	"github.com/go-resty/resty/v2"
+	"github.com/modelcontextprotocol/go-sdk/mcp"
 )
 
 func TestDocumentDetail(t *testing.T) {
 	tool := NewTool(resty.New())
 
-	_, output, err := tool.DocumentDetail(context.Background(), nil, DocumentDetailInput{
+	result, _, err := tool.DocumentDetail(context.Background(), nil, DocumentDetailInput{
 		Sector: "bamboo-base-go",
 		Path:   "/architecture",
 	})
@@ -19,30 +21,45 @@ func TestDocumentDetail(t *testing.T) {
 		return
 	}
 
-	if output.Title == "" {
-		t.Error("Expected non-empty title")
-	}
-	if output.Content == "" {
-		t.Error("Expected non-empty content")
-	}
-	if output.Sector != "bamboo-base-go" {
-		t.Errorf("Expected sector 'bamboo-base-go', got '%s'", output.Sector)
+	if result.IsError {
+		t.Error("Expected successful result")
 	}
 
-	t.Logf("Title: %s", output.Title)
-	t.Logf("DocumentURI: %s", output.DocumentURI)
-	t.Logf("Content: %s", output.Content)
+	// 检查多个 Content
+	if len(result.Content) < 5 {
+		t.Errorf("Expected at least 5 content items, got %d", len(result.Content))
+	}
+
+	// 验证各个字段
+	textContent := result.Content[0].(*mcp.TextContent).Text
+	if !strings.Contains(textContent, "板块:") {
+		t.Error("Expected first content to contain '板块:'")
+	}
+
+	t.Logf("Contents:")
+	for _, c := range result.Content {
+		text := c.(*mcp.TextContent).Text
+		if len(text) > 100 {
+			t.Logf("  %s...", text[:100])
+		} else {
+			t.Logf("  %s", text)
+		}
+	}
 }
 
 func TestDocumentDetailWithInvalidPath(t *testing.T) {
 	tool := NewTool(resty.New())
 
-	_, _, err := tool.DocumentDetail(context.Background(), nil, DocumentDetailInput{
+	result, _, err := tool.DocumentDetail(context.Background(), nil, DocumentDetailInput{
 		Sector: "bamboo-base-go",
 		Path:   "/non-existent-path-12345",
 	})
 	if err == nil {
 		t.Error("Expected error for non-existent path")
+	}
+
+	if result != nil && !result.IsError {
+		t.Error("Expected error result")
 	}
 }
 
@@ -50,7 +67,7 @@ func TestDocumentDetailPathNormalization(t *testing.T) {
 	tool := NewTool(resty.New())
 
 	// 测试不带斜杠的路径
-	_, output, err := tool.DocumentDetail(context.Background(), nil, DocumentDetailInput{
+	result, _, err := tool.DocumentDetail(context.Background(), nil, DocumentDetailInput{
 		Sector: "bamboo-base-go",
 		Path:   "architecture",
 	})
@@ -59,10 +76,15 @@ func TestDocumentDetailPathNormalization(t *testing.T) {
 		return
 	}
 
-	if output.Title == "" {
-		t.Error("Expected non-empty title")
+	if result.IsError {
+		t.Error("Expected successful result")
 	}
-	t.Logf("Title: %s", output.Title)
+
+	// 验证文档内容包含预期关键词
+	contentText := result.Content[4].(*mcp.TextContent).Text
+	if !strings.Contains(contentText, "架构") {
+		t.Error("Expected content to contain '架构'")
+	}
 }
 
 func TestExtractTitle(t *testing.T) {

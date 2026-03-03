@@ -14,21 +14,12 @@ type DocumentDetailInput struct {
 	Path   string `json:"path" jsonschema:"required,文档路径，如 /architecture"`    // Path 文档路径
 }
 
-// DocumentDetailOutput 文档详情工具的输出结果。
-type DocumentDetailOutput struct {
-	Sector      string `json:"sector" jsonschema:"板块标识"`              // Sector 板块标识
-	Path        string `json:"path" jsonschema:"文档路径"`                // Path 文档路径
-	Title       string `json:"title" jsonschema:"文档标题"`               // Title 文档标题（从 Markdown 提取）
-	Content     string `json:"content" jsonschema:"文档 Markdown 原始内容"` // Content 文档 Markdown 原始内容
-	DocumentURI string `json:"document_uri" jsonschema:"完整文档 URI"`    // DocumentURI 完整文档 URI
-}
-
 // DocumentDetail 获取指定文档的完整 Markdown 内容。
 func (t *Tool) DocumentDetail(
 	_ context.Context,
 	_ *mcp.CallToolRequest,
 	input DocumentDetailInput,
-) (*mcp.CallToolResult, DocumentDetailOutput, error) {
+) (*mcp.CallToolResult, any, error) {
 	// 1. 确保 path 以 / 开头
 	path := input.Path
 	if !strings.HasPrefix(path, "/") {
@@ -41,26 +32,41 @@ func (t *Tool) DocumentDetail(
 	// 3. 发送 GET 请求
 	resp, err := t.client.R().Get(uri)
 	if err != nil {
-		return nil, DocumentDetailOutput{}, err
+		return &mcp.CallToolResult{
+			IsError: true,
+			Content: []mcp.Content{
+				&mcp.TextContent{Text: "文档获取失败"},
+			},
+		}, nil, err
 	}
 
 	// 4. 检查响应状态码
 	if resp.StatusCode() != 200 {
-		return nil, DocumentDetailOutput{}, fmt.Errorf("文档不存在或获取失败: HTTP %d", resp.StatusCode())
+		return &mcp.CallToolResult{
+			IsError: true,
+			Content: []mcp.Content{
+				&mcp.TextContent{Text: fmt.Sprintf("文档不存在或获取失败: HTTP %d", resp.StatusCode())},
+			},
+		}, nil, fmt.Errorf("文档不存在或获取失败: HTTP %d", resp.StatusCode())
 	}
 
 	// 5. 提取标题
 	content := resp.String()
 	title := extractTitle(content)
 
-	// 6. 返回结果
-	return nil, DocumentDetailOutput{
-		Sector:      input.Sector,
-		Path:        input.Path,
-		Title:       title,
-		Content:     t.lute.FormatStr("detail", content),
-		DocumentURI: uri,
-	}, nil
+	// 6. 格式化内容
+	formattedContent := t.lute.FormatStr("detail", content)
+
+	// 7. 构建返回结果（使用多个 TextContent）
+	return &mcp.CallToolResult{
+		Content: []mcp.Content{
+			&mcp.TextContent{Text: fmt.Sprintf("板块: %s", input.Sector)},
+			&mcp.TextContent{Text: fmt.Sprintf("路径: %s", input.Path)},
+			&mcp.TextContent{Text: fmt.Sprintf("标题: %s", title)},
+			&mcp.TextContent{Text: fmt.Sprintf("文档地址: %s", uri)},
+			&mcp.TextContent{Text: formattedContent},
+		},
+	}, nil, nil
 }
 
 // extractTitle 从 Markdown 内容中提取第一个标题

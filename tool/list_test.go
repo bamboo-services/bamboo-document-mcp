@@ -4,23 +4,40 @@ import (
 	"context"
 	"fmt"
 	"regexp"
+	"strings"
 	"testing"
 
 	"github.com/go-resty/resty/v2"
+	"github.com/modelcontextprotocol/go-sdk/mcp"
 )
 
 func TestDocumentList(t *testing.T) {
 	tool := NewTool(resty.New())
+	search := "ID"
 
-	_, output, err := tool.DocumentList(context.Background(), nil, DocumentListInput{Sector: "bamboo-base-java", Search: new("ID")})
+	result, _, err := tool.DocumentList(context.Background(), nil, DocumentListInput{Sector: "bamboo-base-java", Search: &search})
 	if err != nil {
 		t.Errorf("DocumentList failed: %v", err)
 		return
 	}
 
-	for _, list := range output.List {
-		t.Log(list)
+	if result.IsError {
+		t.Error("Expected successful result")
 	}
+
+	// 检查第二个 Content (文档列表)
+	if len(result.Content) < 2 {
+		t.Error("Expected at least 2 content items")
+		return
+	}
+
+	textContent := result.Content[1].(*mcp.TextContent).Text
+	if !strings.Contains(textContent, "文档列表") {
+		t.Error("Expected result to contain '文档列表'")
+	}
+
+	t.Logf("Base URL: %s", result.Content[0].(*mcp.TextContent).Text)
+	t.Logf("List: %s", textContent)
 }
 
 func TestDebug(t *testing.T) {
