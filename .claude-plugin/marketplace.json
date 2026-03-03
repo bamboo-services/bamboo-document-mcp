@@ -1,0 +1,31 @@
+{
+  "name": "bamboo-document",
+  "owner": { "name": "XiaoLFeng" },
+  "plugins": [
+    {
+      "name": "document-macos-aarch",
+      "source": "./plugins/document-macos-aarch",
+      "description": "Bamboo 文档 - 竹简库是一套跨语言的后端服务组件库 (macOS Apple Silicon)"
+    },
+    {
+      "name": "document-macos-amd",
+      "source": "./plugins/document-macos-amd",
+      "description": "Bamboo 文档 - 竹简库是一套跨语言的后端服务组件库 (macOS Intel)"
+    },
+    {
+      "name": "document-linux-aarch",
+      "source": "./plugins/document-linux-aarch",
+      "description": "Bamboo 文档 - 竹简库是一套跨语言的后端服务组件库 (Linux ARM64)"
+    },
+    {
+      "name": "document-linux-amd",
+      "source": "./plugins/document-linux-amd",
+      "description": "Bamboo 文档 - 竹简库是一套跨语言的后端服务组件库 (Linux AMD64)"
+    },
+    {
+      "name": "document-windows-amd",
+      "source": "./plugins/document-windows-amd",
+      "description": "Bamboo 文档 - 竹简库是一套跨语言的后端服务组件库 (Windows AMD64)"
+    }
+  ]
+}
