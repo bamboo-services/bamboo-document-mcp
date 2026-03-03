@@ -1,1 +1,1 @@
-{"mcpServers":{"shared-server":{"command":"./document.exe","args":[],"env":{}}}}
+{"mcpServers":{"bamboo-doc":{"command":"cmd","args":["/c","\"%cd%\\document.exe\""],"env":{}}}}

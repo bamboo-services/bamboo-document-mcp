@@ -40,7 +40,7 @@ package-darwin-arm64:
 	@echo "📦 构建 macOS ARM64 插件包..."
 	@mkdir -p $(PLUGINS_DIR)/$(DARWIN_ARM64_DIR)/.claude-plugin
 	GOOS=darwin GOARCH=arm64 $(GO) build $(LDFLAGS) -o $(PLUGINS_DIR)/$(DARWIN_ARM64_DIR)/$(APP_NAME) $(MAIN_FILE)
-	@echo '{"mcpServers":{"shared-server":{"command":"./$(APP_NAME)","args":[],"env":{}}}}' > $(PLUGINS_DIR)/$(DARWIN_ARM64_DIR)/.mcp.json
+	@echo '{"mcpServers":{"bamboo-doc":{"command":"sh","args":["-c","\"$$(pwd)/$(APP_NAME)\""],"env":{}}}}' > $(PLUGINS_DIR)/$(DARWIN_ARM64_DIR)/.mcp.json
 	@perl -pi -e 's/"version":\s*"[^"]*"/"version": "$(VERSION)"/' $(PLUGINS_DIR)/$(DARWIN_ARM64_DIR)/.claude-plugin/plugin.json
 	@echo "✅ 完成: $(PLUGINS_DIR)/$(DARWIN_ARM64_DIR)/"
 
@@ -50,7 +50,7 @@ package-darwin-amd64:
 	@echo "📦 构建 macOS AMD64 插件包..."
 	@mkdir -p $(PLUGINS_DIR)/$(DARWIN_AMD64_DIR)/.claude-plugin
 	GOOS=darwin GOARCH=amd64 $(GO) build $(LDFLAGS) -o $(PLUGINS_DIR)/$(DARWIN_AMD64_DIR)/$(APP_NAME) $(MAIN_FILE)
-	@echo '{"mcpServers":{"shared-server":{"command":"./$(APP_NAME)","args":[],"env":{}}}}' > $(PLUGINS_DIR)/$(DARWIN_AMD64_DIR)/.mcp.json
+	@echo '{"mcpServers":{"bamboo-doc":{"command":"sh","args":["-c","\"$$(pwd)/$(APP_NAME)\""],"env":{}}}}' > $(PLUGINS_DIR)/$(DARWIN_AMD64_DIR)/.mcp.json
 	@perl -pi -e 's/"version":\s*"[^"]*"/"version": "$(VERSION)"/' $(PLUGINS_DIR)/$(DARWIN_AMD64_DIR)/.claude-plugin/plugin.json
 	@echo "✅ 完成: $(PLUGINS_DIR)/$(DARWIN_AMD64_DIR)/"
 
@@ -60,7 +60,7 @@ package-linux-arm64:
 	@echo "📦 构建 Linux ARM64 插件包..."
 	@mkdir -p $(PLUGINS_DIR)/$(LINUX_ARM64_DIR)/.claude-plugin
 	GOOS=linux GOARCH=arm64 $(GO) build $(LDFLAGS) -o $(PLUGINS_DIR)/$(LINUX_ARM64_DIR)/$(APP_NAME) $(MAIN_FILE)
-	@echo '{"mcpServers":{"shared-server":{"command":"./$(APP_NAME)","args":[],"env":{}}}}' > $(PLUGINS_DIR)/$(LINUX_ARM64_DIR)/.mcp.json
+	@echo '{"mcpServers":{"bamboo-doc":{"command":"sh","args":["-c","\"$$(pwd)/$(APP_NAME)\""],"env":{}}}}' > $(PLUGINS_DIR)/$(LINUX_ARM64_DIR)/.mcp.json
 	@perl -pi -e 's/"version":\s*"[^"]*"/"version": "$(VERSION)"/' $(PLUGINS_DIR)/$(LINUX_ARM64_DIR)/.claude-plugin/plugin.json
 	@echo "✅ 完成: $(PLUGINS_DIR)/$(LINUX_ARM64_DIR)/"
 
@@ -70,7 +70,7 @@ package-linux-amd64:
 	@echo "📦 构建 Linux AMD64 插件包..."
 	@mkdir -p $(PLUGINS_DIR)/$(LINUX_AMD64_DIR)/.claude-plugin
 	GOOS=linux GOARCH=amd64 $(GO) build $(LDFLAGS) -o $(PLUGINS_DIR)/$(LINUX_AMD64_DIR)/$(APP_NAME) $(MAIN_FILE)
-	@echo '{"mcpServers":{"shared-server":{"command":"./$(APP_NAME)","args":[],"env":{}}}}' > $(PLUGINS_DIR)/$(LINUX_AMD64_DIR)/.mcp.json
+	@echo '{"mcpServers":{"bamboo-doc":{"command":"sh","args":["-c","\"$$(pwd)/$(APP_NAME)\""],"env":{}}}}' > $(PLUGINS_DIR)/$(LINUX_AMD64_DIR)/.mcp.json
 	@perl -pi -e 's/"version":\s*"[^"]*"/"version": "$(VERSION)"/' $(PLUGINS_DIR)/$(LINUX_AMD64_DIR)/.claude-plugin/plugin.json
 	@echo "✅ 完成: $(PLUGINS_DIR)/$(LINUX_AMD64_DIR)/"
 
@@ -80,7 +80,7 @@ package-windows-amd64:
 	@echo "📦 构建 Windows AMD64 插件包..."
 	@mkdir -p $(PLUGINS_DIR)/$(WINDOWS_AMD64_DIR)/.claude-plugin
 	GOOS=windows GOARCH=amd64 $(GO) build $(LDFLAGS) -o $(PLUGINS_DIR)/$(WINDOWS_AMD64_DIR)/$(APP_NAME).exe $(MAIN_FILE)
-	@echo '{"mcpServers":{"shared-server":{"command":"./$(APP_NAME).exe","args":[],"env":{}}}}' > $(PLUGINS_DIR)/$(WINDOWS_AMD64_DIR)/.mcp.json
+	@echo '{"mcpServers":{"bamboo-doc":{"command":"cmd","args":["/c","\"%cd%\\\\$(APP_NAME).exe\""],"env":{}}}}' > $(PLUGINS_DIR)/$(WINDOWS_AMD64_DIR)/.mcp.json
 	@perl -pi -e 's/"version":\s*"[^"]*"/"version": "$(VERSION)"/' $(PLUGINS_DIR)/$(WINDOWS_AMD64_DIR)/.claude-plugin/plugin.json
 	@echo "✅ 完成: $(PLUGINS_DIR)/$(WINDOWS_AMD64_DIR)/"
 
