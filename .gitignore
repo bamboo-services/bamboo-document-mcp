@@ -18,6 +18,6 @@ coverage.txt
 tmp/
 temp/
 
-document
-document.exe
+# ProjectFile
+bamboo-document
 .mcp.json

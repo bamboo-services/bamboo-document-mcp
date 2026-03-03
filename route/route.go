@@ -40,4 +40,8 @@ func (r *Route) RouteBuild() {
 		Name:        "search",
 		Description: "在文档内容中搜索关键词，返回匹配行及上下文段落",
 	}, r.tool.DocumentSearch)
+	mcp.AddTool(r.mcp, &mcp.Tool{
+		Name:        "sector",
+		Description: "获取所有可用的文档板块列表",
+	}, r.tool.SectorList)
 }

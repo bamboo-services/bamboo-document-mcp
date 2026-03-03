@@ -58,7 +58,7 @@ func (t *Tool) DocumentDetail(
 		Sector:      input.Sector,
 		Path:        input.Path,
 		Title:       title,
-		Content:     content,
+		Content:     t.lute.FormatStr("detail", content),
 		DocumentURI: uri,
 	}, nil
 }
@@ -69,7 +69,7 @@ func extractTitle(content string) string {
 	for _, line := range lines {
 		line = strings.TrimSpace(line)
 		if strings.HasPrefix(line, "# ") {
-			return strings.TrimPrefix(line, "# ")
+			return strings.TrimSpace(strings.TrimPrefix(line, "# "))
 		}
 	}
 	return ""

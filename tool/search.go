@@ -11,10 +11,10 @@ import (
 
 // DocumentSearchInput 文档搜索工具的输入参数。
 type DocumentSearchInput struct {
-	Sector       string `json:"sector" jsonschema:"required,板块标识"`              // Sector 板块标识
-	Path         string `json:"path" jsonschema:"required,文档路径"`                // Path 文档路径
-	Keyword      string `json:"keyword" jsonschema:"required,搜索关键词"`            // Keyword 搜索关键词
-	ContextLines int    `json:"context_lines" jsonschema:"optional,上下文行数，默认 3"` // ContextLines 上下文行数
+	Sector       string `json:"sector" jsonschema:"required,板块标识"`                   // Sector 板块标识
+	Path         string `json:"path" jsonschema:"required,文档路径"`                     // Path 文档路径
+	Keyword      string `json:"keyword" jsonschema:"required,搜索关键词"`                 // Keyword 搜索关键词
+	ContextLines *int   `json:"context_lines" jsonschema:"optional,上下文行数，默认为 3,nil"` // ContextLines 上下文行数
 }
 
 // DocumentSearchOutput 文档搜索工具的输出结果。
@@ -34,9 +34,9 @@ func (t *Tool) DocumentSearch(
 	input DocumentSearchInput,
 ) (*mcp.CallToolResult, DocumentSearchOutput, error) {
 	// 1. 设置默认上下文行数
-	contextLines := input.ContextLines
-	if contextLines <= 0 {
-		contextLines = 3
+	contextLines := 5
+	if input.ContextLines != nil && *input.ContextLines > 0 {
+		contextLines = *input.ContextLines
 	}
 
 	// 2. 确保 path 以 / 开头
@@ -79,7 +79,7 @@ func (t *Tool) DocumentSearch(
 			matches = append(matches, models.SearchMatch{
 				LineNumber: i + 1,
 				Line:       line,
-				Context:    contextBuilder.String(),
+				Context:    t.lute.FormatStr("search", contextBuilder.String()),
 			})
 		}
 	}
