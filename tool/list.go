@@ -58,8 +58,9 @@ func (t *Tool) DocumentList(
 			continue
 		}
 
-		// 组合器
-		listStr += fmt.Sprintf("%d. [%s](%s): %s\n", listNum, matches[1], matches[2], matches[3])
+		// 提取简短路径：去掉 /docs/{sector} 前缀，便于直接用于 detail 查询
+		shortPath := strings.TrimPrefix(matches[2], "/docs/"+input.Sector)
+		listStr += fmt.Sprintf("%d. [%s](%s): %s\n", listNum, matches[1], shortPath, matches[3])
 		listNum++
 	}
 

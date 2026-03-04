@@ -20,8 +20,12 @@ func (t *Tool) DocumentDetail(
 	_ *mcp.CallToolRequest,
 	input DocumentDetailInput,
 ) (*mcp.CallToolResult, any, error) {
-	// 1. 确保 path 以 / 开头
+	// 1. 规范化 path：移除 /docs/{sector} 前缀（如果存在），确保以 / 开头
 	path := input.Path
+	sectorPrefix := "/docs/" + input.Sector
+	if strings.HasPrefix(path, sectorPrefix) {
+		path = strings.TrimPrefix(path, sectorPrefix)
+	}
 	if !strings.HasPrefix(path, "/") {
 		path = "/" + path
 	}
