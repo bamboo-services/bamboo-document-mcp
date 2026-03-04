@@ -1,5 +1,5 @@
-# Bamboo Document MCP Windows 卸载脚本 (PowerShell)
-# 项目地址：https://github.com/bamboo-services/bamboo-document-mcp
+# Bamboo Document MCP Windows Uninstall Script (PowerShell)
+# Project: https://github.com/bamboo-services/bamboo-document-mcp
 
 param(
     [string]$InstallDir = "$env:USERPROFILE\.local\bin"
@@ -12,31 +12,31 @@ function Write-Success { param($msg) Write-Host "[SUCCESS] " -ForegroundColor Gr
 function Write-Warning { param($msg) Write-Host "[WARN] " -ForegroundColor Yellow -NoNewline; Write-Host $msg }
 
 Write-Host ""
-Write-Host "╔══════════════════════════════════════════════════════╗"
-Write-Host "║       Bamboo Document MCP 卸载脚本 (Windows)         ║"
-Write-Host "╚══════════════════════════════════════════════════════╝"
+Write-Host "============================================================"
+Write-Host "       Bamboo Document MCP Uninstaller (Windows)            "
+Write-Host "============================================================"
 Write-Host ""
 
 $BinaryPath = Join-Path $InstallDir "${BinaryName}.exe"
 
 if (-not (Test-Path $BinaryPath)) {
-    Write-Warning "$BinaryName 未安装在 $InstallDir"
+    Write-Warning "$BinaryName is not installed in $InstallDir"
 
-    # 尝试查找其他位置
+    # Try to find other locations
     $Found = Get-Command $BinaryName -ErrorAction SilentlyContinue
     if ($Found) {
-        Write-Info "发现安装位置: $($Found.Source)"
-        $Confirm = Read-Host "是否删除? [y/N]"
+        Write-Info "Found installation at: $($Found.Source)"
+        $Confirm = Read-Host "Remove it? [y/N]"
         if ($Confirm -eq "y" -or $Confirm -eq "Y") {
             Remove-Item -Path $Found.Source -Force
-            Write-Success "已删除: $($Found.Source)"
+            Write-Success "Deleted: $($Found.Source)"
         }
     }
     exit 0
 }
 
-Write-Info "正在删除: $BinaryPath"
+Write-Info "Removing: $BinaryPath"
 Remove-Item -Path $BinaryPath -Force
 
-Write-Success "✅ $BinaryName 已成功卸载"
+Write-Success "$BinaryName has been successfully uninstalled"
 Write-Host ""

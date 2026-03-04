@@ -1,7 +1,7 @@
-# Bamboo Document MCP Windows 安装脚本 (PowerShell)
-# 项目地址：https://github.com/bamboo-services/bamboo-document-mcp
+# Bamboo Document MCP Windows Installation Script (PowerShell)
+# Project: https://github.com/bamboo-services/bamboo-document-mcp
 #
-# 用法：
+# Usage:
 #   iwr -useb https://raw.githubusercontent.com/bamboo-services/bamboo-document-mcp/master/scripts/install.ps1 | iex
 
 param(
@@ -12,85 +12,85 @@ param(
 $Repo = "bamboo-services/bamboo-document-mcp"
 $BinaryName = "bamboo-document"
 
-# 打印函数
+# Print functions
 function Write-Info { param($msg) Write-Host "[INFO] " -ForegroundColor Blue -NoNewline; Write-Host $msg }
 function Write-Success { param($msg) Write-Host "[SUCCESS] " -ForegroundColor Green -NoNewline; Write-Host $msg }
 function Write-Err { param($msg) Write-Host "[ERROR] " -ForegroundColor Red -NoNewline; Write-Host $msg; exit 1 }
 
-# 检测架构
+# Detect architecture
 function Get-Arch {
     $arch = $env:PROCESSOR_ARCHITECTURE
     if ($arch -eq "AMD64") { return "amd64" }
     elseif ($arch -eq "ARM64") { return "arm64" }
-    else { Write-Err "不支持的架构: $arch" }
+    else { Write-Err "Unsupported architecture: $arch" }
 }
 
-# 获取最新版本
+# Get latest version
 function Get-LatestVersion {
     try {
         $release = Invoke-RestMethod -Uri "https://api.github.com/repos/$Repo/releases/latest"
         return $release.tag_name
     } catch {
-        Write-Err "无法获取最新版本号"
+        Write-Err "Failed to get latest version"
     }
 }
 
-# 主流程
+# Main process
 Write-Host ""
-Write-Host "╔══════════════════════════════════════════════════════╗"
-Write-Host "║       Bamboo Document MCP 安装脚本 (Windows)         ║"
-Write-Host "╚══════════════════════════════════════════════════════╝"
+Write-Host "============================================================"
+Write-Host "       Bamboo Document MCP Installer (Windows)              "
+Write-Host "============================================================"
 Write-Host ""
 
-# 获取版本
+# Get version
 if ([string]::IsNullOrEmpty($Version)) {
-    Write-Info "正在获取最新版本..."
+    Write-Info "Fetching latest version..."
     $Version = Get-LatestVersion
 }
-Write-Info "安装版本: $Version"
+Write-Info "Installing version: $Version"
 
-# 检测架构
+# Detect architecture
 $Arch = Get-Arch
-Write-Info "检测到架构: windows/$Arch"
+Write-Info "Detected architecture: windows/$Arch"
 
-# 设置文件名
+# Set filename
 $Binary = "${BinaryName}-windows-${Arch}.exe"
 $DownloadUrl = "https://github.com/${Repo}/releases/download/${Version}/${Binary}"
 
-# 创建安装目录
+# Create install directory
 if (-not (Test-Path $InstallDir)) {
     New-Item -ItemType Directory -Path $InstallDir -Force | Out-Null
 }
 
-# 下载
-Write-Info "正在下载: $DownloadUrl"
+# Download
+Write-Info "Downloading: $DownloadUrl"
 $TempFile = Join-Path $env:TEMP $Binary
 try {
     Invoke-WebRequest -Uri $DownloadUrl -OutFile $TempFile -UseBasicParsing
 } catch {
-    Write-Err "下载失败，请检查版本号是否正确"
+    Write-Err "Download failed. Please check if the version is correct."
 }
 
-# 安装
+# Install
 $DestPath = Join-Path $InstallDir "${BinaryName}.exe"
-Write-Info "正在安装到: $DestPath"
+Write-Info "Installing to: $DestPath"
 Move-Item -Path $TempFile -Destination $DestPath -Force
 
-# 检查 PATH
+# Check PATH
 $PathDirs = $env:PATH -split ";"
 if ($PathDirs -notcontains $InstallDir) {
     Write-Host ""
-    Write-Warning "安装目录 $InstallDir 不在 PATH 中"
-    Write-Host "请将以下内容添加到你的 PowerShell 配置文件:"
+    Write-Warning "Install directory $InstallDir is not in PATH"
+    Write-Host "Please add the following to your PowerShell profile:"
     Write-Host ""
     Write-Host "    `$env:PATH += `";$InstallDir`"" -ForegroundColor Yellow
     Write-Host ""
 }
 
-# 成功
+# Success
 Write-Host ""
-Write-Success "✅ $BinaryName $Version 安装成功！"
+Write-Success "$BinaryName $Version installed successfully!"
 Write-Host ""
-Write-Host "使用方法："
+Write-Host "Usage:"
 Write-Host "    $BinaryName --help"
 Write-Host ""
